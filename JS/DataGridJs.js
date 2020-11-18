@@ -23,18 +23,18 @@
         LoadEvents();
 		//FormValidation();
     }   
-    var LoadData = function () {
+    var LoadData = function () {		
         $.ajax({
 				type: 'GET',
-				url: 'https://jsonplaceholder.typicode.com/posts/1/comments',                   
+				url: 'https://gorest.co.in/public-api/users?page=74',                   
 				contentType: 'application/json; charset=utf-8',
-				contentType: 'application/json',
 				beforeSend: function () {
 					// $("#progress").show();
 				},
-				success: function (data) {                       				        
-					var body = ""
-					$.each(data, function (i, data) {
+				success: function (respose) {
+					var udata=respose.data;								
+					var body = "";
+					$.each(udata, function (i, data) {
 						body += "<tr>";
 						body += "<td>" +'<input type="checkbox" class="chkrow SelectedChecks" id="chkcommentid" Data-id="' + data.id + '" Data-Name="' + data.name + '" Data-Email="' + data.email + '"  name="chkid">' + "</td>";
 						body += "<td>" + data.id + "</td>";
@@ -66,22 +66,7 @@
         _btnAdd.on("click", function () {
             LoadAddPopUp();
         });
-        _btnEdit.on("click", function () {				 
-			// $.ajax({
-				// url: "",
-				// type: "GET",
-				// data: JSON.stringify({ id: _id }),
-				// contentType: "application/json",
-				// success: function (MsgData) {
-					//get data from server                      
-				// },
-				// error: function (jqxhr, status, error) {                                
-					// alert("e :" + status + " " + error);
-				// },
-				// complete: function (data) {
-					
-				// }
-			// });              
+        _btnEdit.on("click", function () {				 			             
           LoadeditPopUpcontrols();
         });
 		_btnDelete.on("click", function () {
@@ -89,14 +74,12 @@
 			var _IsData = false;
             $("#messageDisplay").hide();
             $("#tbldata tbody tr").each(function (row) {
-                if ($(this).find("input[name='chkid']").is(":checked")) {
-					
+                if ($(this).find("input[name='chkid']").is(":checked")) {					
                     var _DeleteData = {};
                     _UserID = $(this).find("input[name='chkid']").attr("Data-id");                  
                     _DeleteData.id = $(this).find("input[name='chkid']").attr("Data-id");
-                        //call api for delete
-						//$('#r2').remove();						
-                        _IsData = true;
+                     Deletecall();  					
+                    _IsData = true;
 				    $(this).closest("tr").remove();
                 }                
                
@@ -106,11 +89,33 @@
                 }			
         });
 		
+	var Deletecall = function (){
+		 $.ajax({
+			 url: "https://gorest.co.in/public-api/users/"+_UserID,
+			 type: "DELETE",					 
+			 headers: {
+						"Content-Type": "application/x-www-form-urlencoded",
+						"Authorization": "Bearer ACCESS-TOKEN"
+						},			 
+			 contentType: "application/json; charset=UTF-8",                                       
+			 beforeSend: function (xhr) {
+				 xhr.setRequestHeader('Authorization', 'Bearer 78a1dd9c998bba6667e12b5550a517e089f30ff24bc9603e34a684a5aec7a2b4');
+			 },
+			 success: function (resdata) {
+				 var res=resdata.data;				 
+			 },
+			 error: function (err) {
+				 alert(err.statusText);
+			 },
+			complete: function (data) {								
+			}
+		 });
+	}
+	
 	var LoadAddPopUp= function(){
 		$("#divRequestAction").show();
 		LoadAddPopUpControlles();
 	}	
-		
 	
     var LoadAddPopUpControlles = function () {
 		$("#HeaderTitle").text("");
@@ -119,39 +124,34 @@
         _txtname = $("#txtname");
         _txtemail = $("#txtemail");
 		_btnSave = $("#btnsave");
-        _btnCancel = $("#btnCancel");      
-         LoadAddItemEvents();
-         FormValidation();
-    }
-
-    var LoadAddItemEvents = function () {        
-        _btnSave.on("click", function () {
+        _btnCancel = $("#btnCancel"); 
+		_btnUpdate = $("#btnupdate");
+		_btnUpdate.hide();
+		_btnAdd=$("#btnsave").show();
+		 //ClearData();
+         _btnSave.on("click", function () {
             var IsValid = $("#dataform").valid();
             if (IsValid) {
                var id = _txtid.val();
                var name = _txtname.val();
                var email = _txtemail.val();
                  $.ajax({
-                     url: "https://jsonplaceholder.typicode.com/posts/1/comments",
-                     type: "POST",
-                     data: JSON.stringify({userId: 1, id: id, name: name, email: email}),
-                     contentType: "application/json",                   
-                     dataType: 'json',
-                    // beforeSend: function () {
-                        // loading saving data div
-                    // },
-                     success: function (data) {
-						 if(data){
-								var body = "";
-								body += "<tr>";
-								body += "<td>" +'<input type="checkbox" class="chkrow SelectedChecks" onclick="chkselet(this)" id="chkcommentid" Data-id="' + data.id + '" Data-Name="' + data.name + '" Data-Email="' + data.email + '"  name="chkid">' + "</td>";
-								body += "<td>" + id + "</td>";
-								body += "<td>" + data.name + "</td>";
-								body += "<td>" + data.email + "</td>";						
-								body += "</tr>";
-							_tbldata.append(body);
+                     url: "https://gorest.co.in/public-api/users",
+                     type: "POST",					 
+					 headers: {
+								"Content-Type": "application/x-www-form-urlencoded",
+								"Authorization": "Bearer ACCESS-TOKEN"
+								},
+                     data: {name: name, email: email, gender: "Male", status: "Active"},
+                     contentType: "application/json; charset=UTF-8",                                       
+                     beforeSend: function (xhr) {
+                         xhr.setRequestHeader('Authorization', 'Bearer 78a1dd9c998bba6667e12b5550a517e089f30ff24bc9603e34a684a5aec7a2b4');
+                     },
+                     success: function (resdata) {
+						 var res=resdata.data;
+						 if(!res.message){
 							alert("data is saved....");
-							$("#divRequestAction").hide();
+							$("#divRequestAction").hide();							
 						 }else{
 							 alert("error whihle save data");
 						 }                        
@@ -159,11 +159,13 @@
                      error: function (err) {
                          alert(err.statusText);
                      },
-                    // complete: function (data) {
-                        // //close saving data div
-                    // }
+                    complete: function (data) {
+						$("#tbldata > tbody").empty();
+                        LoadData();
+                    }
                  });
             }
+			
         });
 		$(".close").on('click', function () {
             $("#divRequestAction").hide();
@@ -171,9 +173,15 @@
         _btnCancel.on('click', function () {
             $("#divRequestAction").hide();
         }) 
-	
+         FormValidation();
     }
+    var ClearData = function(){
+		_txtid.val('');
+        _txtname.val('');
+        _txtemail.val('');
+	}
 	
+    
 	var LoadeditPopUpcontrols= function(){
 		$("#divRequestAction").show();
 		$("#HeaderTitle").text("");
@@ -183,15 +191,37 @@
         _txtemail = $("#txtemail");
 		_btnUpdate = $("#btnupdate");
 		_btnAdd=$("#btnsave").hide();
+		_btnUpdate=$("#btnupdate").show();
         _btnCancel = $("#btnCancel");      
          
 		 _txtid.val(_UserID);
 		 _txtname.val(_name);
 		 _txtemail.val(_email);
 		 
+		GetLoadselectedUserdetails();
 		LoadeditEvents();		 
 		
 	}	
+	
+	var GetLoadselectedUserdetails = function(){
+		$.ajax({
+				type: 'GET',
+				url: 'https://gorest.co.in/public-api/users/'+_UserID,                   
+				contentType: 'application/json; charset=utf-',
+				beforeSend: function () {
+					// $("#progress").show();
+				},
+				success: function (respose) {
+					var udata=respose.data;													
+					//alert(udata.id + udata.name +  udata.email );
+				},
+				error: function (err) {
+					//  $("#progress").hide();
+					alert(err);
+				}
+			});                
+	}
+	
 	
 	var LoadeditEvents =function(){
 		_btnUpdate.on("click", function () {
@@ -201,22 +231,33 @@
                var name = _txtname.val();
                var email = _txtemail.val();
                  $.ajax({
-                     url: "https://jsonplaceholder.typicode.com/posts/1/comments",
-                     type: "POST",
-                     data: JSON.stringify({userId: 1, id: id, name: name, email: email}),
-                     contentType: "application/json",                   
-                     dataType: 'json',                    
-                     success: function (data) {
-						 if(data){
-							$("#divRequestAction").hide();
-							LoadGrid();
+                      url: "https://gorest.co.in/public-api/users/"+id,
+                     type: "PUT",					 
+					 headers: {
+								"Content-Type": "application/x-www-form-urlencoded",
+								"Authorization": "Bearer ACCESS-TOKEN"
+								},
+                     data: {name: name, email: email, gender: "Male", status: "Active"},
+                     contentType: "application/json; charset=UTF-8",                                       
+                     beforeSend: function (xhr) {
+                         xhr.setRequestHeader('Authorization', 'Bearer 78a1dd9c998bba6667e12b5550a517e089f30ff24bc9603e34a684a5aec7a2b4');
+                     },
+                     success: function (resdata) {
+						 var res=resdata.data;
+						 if(!res.message){
+							alert("data is updated....");
+							$("#divRequestAction").hide();							
 						 }else{
-							 alert("error whihle save data");
+							 alert("error whihle updating data");
 						 }                        
                      },
                      error: function (err) {
                          alert(err.statusText);
-                     }
+                     },
+                    complete: function (data) {
+						$("#tbldata > tbody").empty();
+                        LoadData();
+                    }
                  });
             }
         });
@@ -232,12 +273,12 @@
         $("#dataform").validate({
             // Specify validation rules
             rules: {
-                txtid: "required",
+                //txtid: "required",
                 txtname: "required",
             },
             // Specify validation error messages
             messages: {
-                txtid: "id is Required",
+                //txtid: "id is Required",
                 txtname: "name is required",
             },
             submitHandler: function (form) {
