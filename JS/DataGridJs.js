@@ -23,10 +23,28 @@
         LoadEvents();
 		//FormValidation();
     }   
-    var LoadData = function () {		
+    var LoadData = function () {	
+        var page=70;
+		
+		$.ajax({
+				type: 'GET',
+				url: 'https://gorest.co.in/public-api/users',                   
+				contentType: 'application/json; charset=utf-8',
+				beforeSend: function () {
+					// $("#progress").show();
+				},
+				success: function (respose) {
+					page=respose.meta.pagination.pages;	//meta":{"pagination	
+				},
+				error: function (err) {
+					//  $("#progress").hide();
+					alert(err);
+				}
+			});
+		
         $.ajax({
 				type: 'GET',
-				url: 'https://gorest.co.in/public-api/users?page=74',                   
+				url: 'https://gorest.co.in/public-api/users?page='+page,                   
 				contentType: 'application/json; charset=utf-8',
 				beforeSend: function () {
 					// $("#progress").show();
