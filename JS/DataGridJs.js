@@ -12,6 +12,8 @@
     var  _txtemail;
 	var  _btnSave;
     var  _btnCancel;      
+	
+	var page=0;
     
     var _LoadGrid = function () {       
         _tbldata= $("#tbldata");       
@@ -23,9 +25,8 @@
         LoadEvents();
 		//FormValidation();
     }   
-    var LoadData = function () {	
-        var page=70;
-		
+	
+    var LoadData = function () {	        		
 		$.ajax({
 				type: 'GET',
 				url: 'https://gorest.co.in/public-api/users',                   
@@ -34,24 +35,27 @@
 					// $("#progress").show();
 				},
 				success: function (respose) {
-					page=respose.meta.pagination.pages;	//meta":{"pagination	
+					page=respose.meta.pagination.pages;
+					LoadePages();
 				},
 				error: function (err) {
 					//  $("#progress").hide();
 					alert(err);
 				}
-			});
-		
-        $.ajax({
+			});				                  
+    }   
+	
+	var LoadePages = function (){		 
+		$.ajax({
 				type: 'GET',
-				url: 'https://gorest.co.in/public-api/users?page='+page,                   
+				url: 'https://gorest.co.in/public-api/users?page='+75,                   
 				contentType: 'application/json; charset=utf-8',
 				beforeSend: function () {
 					// $("#progress").show();
 				},
 				success: function (respose) {
 					var udata=respose.data;								
-					var body = "";
+					var body = "<tbody>";
 					$.each(udata, function (i, data) {
 						body += "<tr>";
 						body += "<td>" +'<input type="checkbox" class="chkrow SelectedChecks" id="chkcommentid" Data-id="' + data.id + '" Data-Name="' + data.name + '" Data-Email="' + data.email + '"  name="chkid">' + "</td>";
@@ -60,14 +64,15 @@
 						body += "<td>" + data.email + "</td>";						
 						body += "</tr>";
 					});
+					body +="</tbody>";
 					_tbldata.append(body);
 				},
 				error: function (err) {
 					//  $("#progress").hide();
 					alert(err);
 				}
-			});                
-    }   
+			});      
+	}
 	
     var LoadEvents = function () {	
 	    
@@ -81,7 +86,7 @@
 		    EnableEditbutton();						
         });
 		
-        _btnAdd.on("click", function () {
+        _btnAdd.on("click", function () {					
             LoadAddPopUp();
         });
         _btnEdit.on("click", function () {				 			             
@@ -99,15 +104,13 @@
                      Deletecall();  					
                     _IsData = true;
 				    $(this).closest("tr").remove();
-                }                
-               
+                }                               
             }); 
 			 if (!_IsData) {                   
                     alert("Check at least one check box");
                 }			
-        });
-		
-	var Deletecall = function (){
+        });	
+		var Deletecall = function (){
 		 $.ajax({
 			 url: "https://gorest.co.in/public-api/users/"+_UserID,
 			 type: "DELETE",					 
@@ -131,8 +134,9 @@
 	}
 	
 	var LoadAddPopUp= function(){
+		ClearData();
 		$("#divRequestAction").show();
-		LoadAddPopUpControlles();
+		LoadAddPopUpControlles();		
 	}	
 	
     var LoadAddPopUpControlles = function () {
@@ -145,6 +149,7 @@
         _btnCancel = $("#btnCancel"); 
 		_btnUpdate = $("#btnupdate");
 		_btnUpdate.hide();
+		_btnSave.prop('disabled', false);
 		_btnAdd=$("#btnsave").show();
 		 //ClearData();
          _btnSave.on("click", function () {
@@ -167,9 +172,12 @@
                      },
                      success: function (resdata) {
 						 var res=resdata.data;
-						 if(!res.message){
+						 if(!res.message){	
+						    $('#tbldata tbody').empty();
+							LoadData();
 							alert("data is saved....");
-							$("#divRequestAction").hide();							
+							//$("#divRequestAction").hide();
+                            _btnSave.prop('disabled', true);
 						 }else{
 							 alert("error whihle save data");
 						 }                        
@@ -177,28 +185,26 @@
                      error: function (err) {
                          alert(err.statusText);
                      },
-                    complete: function (data) {
-						$("#tbldata > tbody").empty();
-                        LoadData();
+                    complete: function (data) {						
                     }
                  });
             }
 			
         });
-		$(".close").on('click', function () {
+		$(".close").on('click', function () {			
             $("#divRequestAction").hide();
         }) 
         _btnCancel.on('click', function () {
             $("#divRequestAction").hide();
         }) 
-         FormValidation();
+         FormValidation();		 
     }
-    var ClearData = function(){
-		_txtid.val('');
-        _txtname.val('');
-        _txtemail.val('');
-	}
 	
+    var ClearData = function(){
+		$("#txtid").val('');
+		$("#txtname").val('');
+		$("#txtemail").val('');       
+	}	
     
 	var LoadeditPopUpcontrols= function(){
 		$("#divRequestAction").show();
@@ -242,6 +248,7 @@
 	
 	
 	var LoadeditEvents =function(){
+		_btnUpdate.prop('disabled', false);
 		_btnUpdate.on("click", function () {
             var IsValid = $("#dataform").valid();
             if (IsValid) {
@@ -264,7 +271,9 @@
 						 var res=resdata.data;
 						 if(!res.message){
 							alert("data is updated....");
-							$("#divRequestAction").hide();							
+							_btnUpdate.prop('disabled', true);
+							_btnEdit.prop('disabled', true);
+							//$("#divRequestAction").hide();							
 						 }else{
 							 alert("error whihle updating data");
 						 }                        
@@ -279,7 +288,7 @@
                  });
             }
         });
-		$(".close").on('click', function () {
+		$(".close").on('click', function () {			
             $("#divRequestAction").hide();
         }) 
         _btnCancel.on('click', function () {
